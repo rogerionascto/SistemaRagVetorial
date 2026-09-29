@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: rag-azure-flask
+    env: python
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "gunicorn app:app --workers 1 --threads 4 --timeout 120"
+    envVars:
+      - key: AZURE_OPENAI_ENDPOINT
+        sync: false
+      - key: AZURE_OPENAI_API_KEY
+        sync: false
+      - key: AZURE_OPENAI_API_VERSION
+        value: "2024-02-15-preview"
+      - key: AZURE_OPENAI_DEPLOYMENT_NAME
+        sync: false
