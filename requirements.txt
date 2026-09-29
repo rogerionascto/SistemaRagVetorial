@@ -1,7 +1,7 @@
 flask==3.0.3
 gunicorn==22.0.0
 azure-openai==1.0.0b1
-openai==1.30.1
+openai
 chromadb==0.5.0
 sentence-transformers==2.7.0
 beautifulsoup4==4.12.3
