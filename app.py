@@ -9,10 +9,13 @@ from flask import Flask, render_template, request, jsonify
 from sentence_transformers import SentenceTransformer
 import chromadb
 from openai import AzureOpenAI
+from dotenv import load_dotenv
 
 # -------------------------------------------------------------
-# 1. Validação de Credenciais do Azure OpenAI no Ambiente
+# 1. Carregamento de Ambiente e Validação de Credenciais
 # -------------------------------------------------------------
+load_dotenv()
+
 AZURE_ENDPOINT = os.environ.get("AZURE_OPENAI_ENDPOINT")
 AZURE_API_KEY = os.environ.get("AZURE_OPENAI_API_KEY")
 AZURE_API_VERSION = os.environ.get("AZURE_OPENAI_API_VERSION", "2024-02-15-preview")
@@ -161,7 +164,7 @@ def indexar_documentos():
         collection.add(
             documents=todos_chunks,
             embeddings=embeddings,
-            metadados=metadados,
+            metadatas=metadados,
             ids=ids
         )
         print(f"Total de {len(todos_chunks)} chunks indexados no ChromaDB com sucesso.")
