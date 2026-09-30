@@ -210,7 +210,7 @@ def perguntar():
     texto_contexto = "\n\n".join(contexto_prompt)
 
     # 2. Prompt com restrição estrita de domínio
-    prompt_sistema = (
+    instrucoes_sistema = (
         "Você é um tutor educacional estritamente factual. Responda à pergunta do usuário "
         "utilizando única e exclusivamente o contexto fornecido abaixo. Se a informação não estiver presente "
         "no contexto, diga claramente: 'Não encontrei dados suficientes no material consultado para responder a essa pergunta.' "
@@ -219,16 +219,29 @@ def perguntar():
     
     prompt_usuario_formatado = f"Contexto:\n{texto_contexto}\n\nPergunta: {pergunta_usuario}"
 
-    # 3. Geração via Azure OpenAI
+    # 3. Geração via Azure OpenAI (sem temperature explícita)
     try:
-        resposta_llm = azure_client.chat.completions.create(
-            model=AZURE_DEPLOYMENT,
-            messages=[
-                {"role": "system", "content": prompt_sistema},
-                {"role": "user", "content": prompt_usuario_formatado}
-            ],
-            temperature=0.0
-        )
+        try:
+            resposta_llm = azure_client.chat.completions.create(
+                model=AZURE_DEPLOYMENT,
+                messages=[
+                    {"role": "system", "content": instrucoes_sistema},
+                    {"role": "user", "content": prompt_usuario_formatado}
+                ]
+            )
+        except Exception as api_err:
+            # Fallback caso o modelo (ex: o1-mini / o1) rejeite a role "system"
+            if "system" in str(api_err).lower():
+                prompt_combinado = f"{instrucoes_sistema}\n\n---\n\n{prompt_usuario_formatado}"
+                resposta_llm = azure_client.chat.completions.create(
+                    model=AZURE_DEPLOYMENT,
+                    messages=[
+                        {"role": "user", "content": prompt_combinado}
+                    ]
+                )
+            else:
+                raise api_err
+
         resposta_final = resposta_llm.choices[0].message.content
 
         # 4. Auditoria e Persistência no SQLite3
